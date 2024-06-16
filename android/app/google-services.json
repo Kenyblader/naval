@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "943505874381",
+    "project_id": "naval-caa0f",
+    "storage_bucket": "naval-caa0f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943505874381:android:c4f77744a093be3cba3884",
+        "android_client_info": {
+          "package_name": "com.naval"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiVZXP1c6GExUHTv4GiLCQQYLu4Mpn4ys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
