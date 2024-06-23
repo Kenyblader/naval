@@ -9,12 +9,13 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect } from "react";
-import { Button, Dimensions, GestureResponderEvent, Pressable, Image, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
+import { Button, Dimensions, GestureResponderEvent, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg';
 import Croix from "./images/croix.png";
 import right from "./images/Fleche.png";
 import AnimateElement from "./compenents/croix_fleche";
+import MyModal from "./compenents/Modal";
 interface Position {
     x: number | any
     y: number | any
@@ -41,13 +42,16 @@ const Game = () => {
     const [viewRight, setViewRight] = useState(false);
     const [viewCroixIA, setViewCroixIA] = useState(false);
     const [viewRightIA, setViewRightIA] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [confirm, setConfirm] = useState(false);
+
 
 
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
 
-    const gridWidth = screenWidth * 0.8;
-    const gridHeight = screenHeight * 0.8;
+    const gridWidth = screenWidth * 0.9;
+    const gridHeight = screenHeight * 0.9;
 
     const a = gridWidth / 5;
     const b = gridHeight / 10;
@@ -156,12 +160,7 @@ const Game = () => {
             generateIaList();
     }, [statusJeu]);
 
-    useEffect(() => {
-        if (IaList.length === 0 && statusJeu === 2) {
-            setWinner(1);
-            setStatusJeu(0);
-        }
-    }, [])
+
     useEffect(() => {
         if (maList.length === 0 && statusJeu === 2) {
             setStatusJeu(0);
@@ -177,7 +176,6 @@ const Game = () => {
                 setTimeout(() => {
                     actackIA();
                 }, 1000);
-
             }
         }
     }, [turn])
@@ -207,15 +205,53 @@ const Game = () => {
     const relancer_La_Partie = () => {
         setStatusJeu(0);
         setWinner(0);
-        setTurn(false);
+        setTurn(true);
         setIaList([]);
         setList([]);
+        setText("Placer vos joueur sur le terrain");
     }
 
-    const whichWinner = () => {
+    const confirmRelancementJeu = () => {
+        return (
+            <>
+                <MyModal visible={confirm} onClose={() => { setConfirm(!confirm) }} title={"Navale"} message={"Voulez-vous vraiment recommancer le jeu ?"} onPress={() => { relancer_La_Partie() }} info={false} text1={"Oui"} text2={"Non"} />
+
+            </>
+        )
+    }
+
+
+    const whichWinner = (element: number, message?: string, title?: string) => {
+        switch (element) {
+            case 1:
+                return (
+                    <MyModal visible={modalVisible} onClose={() => { setModalVisible(!modalVisible) }} title={title ? title : "Navale"} message={message ? message : "Vous avez gagné"} onPress={() => { relancer_La_Partie() }} info={true} text1={"Nouvelle Partie"} text2={""} />
+                )
+            case 2:
+                return (
+                    <MyModal visible={modalVisible} onClose={() => { setModalVisible(!modalVisible) }} title={title ? title : "Navale"} message={message ? message : "Vous avez perdu déso voulez relancer la partie"} onPress={() => { relancer_La_Partie() }} info={true} text1={"Nouvelle Partie"} text2={""} />
+                )
+            default:
+                return null;
+        }
 
     }
+    useEffect(() => {
+        if (IaList.length === 0 && statusJeu === 2) {
+            setWinner(1);
+            setStatusJeu(0);
+            setModalVisible(true);
+        }
+        else if (maList.length === 0 && statusJeu === 2) {
+            setWinner(2);
+            setStatusJeu(0);
+            setModalVisible(true);
+        }
+    }, [IaList, maList])
+
     const renderEtapePartie = (state: any) => {
+
+
         switch (state) {
             case 0:
                 return (
@@ -224,9 +260,9 @@ const Game = () => {
                             <View style={styles.container} />
                         </TouchableWithoutFeedback>
                         <View style={styles.bottomBar}>
-                            {
-                                <Button title={text} color='rgb(49, 236, 74)' onPress={() => { }} />
-                            }
+                            <Button title={text} color='black' onPress={() => { }} />
+
+                            <Button title="Replacer les joueurs" color='rgb(49, 236, 74)' onPress={() => { setList([]); setStatusJeu(0); setText("Placer vos joueur sur le terrain") }} />
 
                         </View>
                     </>
@@ -244,7 +280,9 @@ const Game = () => {
                         </View>
                     </>
                 )
-            case 2:
+            case 2: {
+                const text1 = "Nombre de joueur :" + maList.length;
+                const text2 = " Nombre d'IA restante :" + IaList.length;
                 return (
                     <>
                         {turn && (<TouchableWithoutFeedback onPress={actack}>
@@ -255,13 +293,20 @@ const Game = () => {
                         <AnimateElement isVisible={viewCroixIA} onDisappear={setViewCroixIA} image={Croix} responsePosition={responsePositionIA} indice={null} />
                         <AnimateElement isVisible={viewRightIA} onDisappear={setViewRightIA} image={right} responsePosition={responsePositionIA} indice={1} />
                         <View style={styles.bottomBar}>
-                            <Button title="Recommencer" color='black' onPress={() => { relancer_La_Partie() }} />
-                            <Button title="Sortir" color='rgb(49, 236, 74)' onPress={() => { setList([]); setStatusJeu(0) }} />
-
+                            <Button title="Recommencer" color='black' onPress={() => { setConfirm(!confirm) }} />
+                            <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", backgroundColor: "rgb(49, 236, 74)", padding: 20}}>
+                                <Text style={{ color: "white" }}>
+                                    {text1}
+                                </Text>
+                                <Text style={{ color: "white" }}>
+                                    {text2}
+                                </Text>
+                            </View>
                         </View>
                     </>
 
                 )
+            }
             default:
                 return null;
         }
@@ -272,6 +317,12 @@ const Game = () => {
                 renderEtapePartie(statusJeu)
             }
 
+            {
+                whichWinner(winner)
+            }
+            {
+                confirmRelancementJeu()
+            }
             <View style={styles.flatList}>
                 <ImageBackground source={gameBackground} style={styles.background}>
                     {ImageList(maList)}
