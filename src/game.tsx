@@ -8,20 +8,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button, Dimensions, GestureResponderEvent, Pressable, Image, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
 import ImageList from './imageList';
-import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
-import Croix from "./images/croix.png"
+import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg';
+import Croix from "./images/croix.png";
+import right from "./images/Fleche.png";
+import { opacity } from 'react-native-reanimated/lib/typescript/reanimated2/Colors';
+import AnimateElement from "./compenents/croix_fleche";
 interface Position {
-    x: number
-    y: number
+    x: number | any
+    y: number | any
 }
 
 interface reponseAttack {
-    p: Position,
-reponse: boolean
-
+    top: number
+    left: number,
+    reponse: boolean
 }
 
 const Game = () => {
@@ -34,7 +37,10 @@ const Game = () => {
     const [statusJeu, setStatusJeu] = useState(0);//statut du jeu
     const [actionPosition, setActionPosition] = useState<Position>({ x: 0, y: 0 });//position de l'action
     const [actionPositionIA, setActionPositionIA] = useState<Position>({ x: 0, y: 0 });//position de l'action de l'ia
-    const [responsePosition, setResponsePosition] = useState<reponseAttack>({ p: { x: 100, y: 100 }, reponse: false });//position de la réponse]
+    const [responsePosition, setResponsePosition] = useState({ top: 9, left: 9 });
+    const [viewCroix, setViewCroix] = useState(true);
+    const [viewRight, setViewRight] = useState(false);
+
     let a: number = (Dimensions.get('window').width) / 5;
     let b: number = (Dimensions.get('window').height) / 10;
 
@@ -74,14 +80,7 @@ const Game = () => {
         return { x: x2, y: y2 };
     }
 
-    const setPosition = (p: Position) => {
-        p = TranslateDimension(p);
-        return {
-            position: 'absolute',
-            top: (p.y + 9),
-            left: p.x,
-        }
-    }
+
 
     const generateIaList = () => {
 
@@ -106,16 +105,23 @@ const Game = () => {
         return list;
     }
 
+
     const actack = (event: GestureResponderEvent) => {
         let p: Position = { x: event.nativeEvent.locationX, y: event.nativeEvent.locationY };
         p = TranslateDimension(p);
         let found = IaList.some(element => element.x === p.x && element.y === p.y);
+        setResponsePosition({ top: p.y, left: p.x });
+
         if (found) {
             let newList = IaList.filter(item => item.x !== p.x || item.y !== p.y);
-            setResponsePosition({ p: p, reponse: false });
             setIaList(newList)
-            setResponsePosition({ p: p, reponse: true });
+            setViewRight(!viewRight)
         }
+        else
+        {
+            setViewCroix(!viewCroix);
+        }
+        console.log(p.x, p.y)
 
     }
 
@@ -125,7 +131,12 @@ const Game = () => {
     }, [statusJeu]);
 
     useEffect(() => {
-        if (maList.length === maxPlayer) {
+        if (maList.length === 0) {
+            setStatusJeu(2);
+
+        }
+        else {
+            setStatusJeu(3);
         }
     }, [maList]);
 
@@ -153,20 +164,23 @@ const Game = () => {
     return (
         <View style={{ height: '90%' }}>
             {
-                statusJeu === 0 && (
+                statusJeu === 0 ? (
                     <TouchableWithoutFeedback onLongPress={onTouch}>
                         <View style={styles.container} />
                     </TouchableWithoutFeedback>
-                )
+                ) :
+                    (
+                        <TouchableWithoutFeedback onPress={actack}>
+                            <View style={styles.container} />
+                        </TouchableWithoutFeedback>
+                    )
+
             }
-            <TouchableWithoutFeedback onPress={actack}>
-                <View style={styles.container} />
-            </TouchableWithoutFeedback>
-            <Animated.View style={setPosition(responsePosition.p)}>
-                <Image source={Croix} style={[{ width: 30, height: 35 }]} />
-            </Animated.View>
+            <AnimateElement isVisible={viewCroix} onDisappear={setViewCroix} image={Croix} responsePosition={responsePosition} indice={null}/>
+            <AnimateElement isVisible={viewRight} onDisappear={setViewRight} image={right} responsePosition={responsePosition} indice={1}/>
             <View style={styles.flatList}>
                 <ImageBackground source={gameBackground} style={styles.background}>
+
                     {ImageList(IaList)}
                 </ImageBackground>
             </View>
@@ -194,6 +208,15 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: 10,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    fleche:
+    {
+        width: 69,
+        height: 35
+    },
+    croix:
+    {
+        width: 30, height: 35
     },
     background: {
         flex: 1,

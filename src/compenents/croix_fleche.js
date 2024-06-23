@@ -4,40 +4,56 @@
 import React, { useEffect, useRef } from 'react';
 import { Image, Animated, StyleSheet } from 'react-native';
 
-const BlinkingCharacter = ({ isHit, onDisappear }) => {
-    const opacity = useRef(new Animated.Value(1)).current;
+const BlinkingCharacter = ({ isVisible, onDisappear, image, responsePosition, indice }) => {
+    const opacity = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        if (isHit) {
-            // Clignotement
-            Animated.loop(
-                Animated.sequence([
-                    Animated.timing(opacity, {
-                        toValue: 0,
-                        duration: 100,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(opacity, {
-                        toValue: 1,
-                        duration: 100,
-                        useNativeDriver: true,
-                    }),
-                ]),
-                {
-                    iterations: 10, // Nombre de clignotements (ici 10)
-                }
-            ).start();
-
-            // Disparition après 2 secondes
-            setTimeout(() => {
-                onDisappear();
-            }, 2000);
+        if (isVisible) {
+            startBlinking();
         }
-    }, [isHit]);
+    }, [isVisible]);
+
+    const startBlinking = () => {
+        Animated.sequence([
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+                toValue: 0,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+                toValue: 0,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+                toValue: 0,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+        ]).start(() => {
+            // Après le clignotement, informer le parent que l'animation est terminée
+            onDisappear(!isVisible);
+        });
+    };
 
     return (
-        <Animated.View style={[styles.character, { opacity }]}>
-            <Image source={require('./images/character.png')} style={styles.image} />
+        <Animated.View style={[styles.character, { opacity }, responsePosition]}>
+            <Image source={image} style={!indice ? styles.croix : styles.fleche} />
         </Animated.View>
     );
 };
@@ -45,14 +61,17 @@ const BlinkingCharacter = ({ isHit, onDisappear }) => {
 const styles = StyleSheet.create({
     character: {
         position: 'absolute',
-        top: 100,
-        left: 100,
         width: 100,
         height: 100,
     },
-    image: {
-        width: '100%',
-        height: '100%',
+    croix: {
+        width: 30,
+        height: 35,
+    },
+    fleche:
+    {
+        width: 69,
+        height: 35,
     },
 });
 
