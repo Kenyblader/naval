@@ -8,13 +8,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button, Dimensions, GestureResponderEvent, Pressable, Image, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg';
 import Croix from "./images/croix.png";
 import right from "./images/Fleche.png";
-import { opacity } from 'react-native-reanimated/lib/typescript/reanimated2/Colors';
 import AnimateElement from "./compenents/croix_fleche";
 interface Position {
     x: number | any
@@ -29,20 +28,29 @@ interface reponseAttack {
 
 const Game = () => {
     let ok: Boolean = false;
+
     const [maList, setList] = useState<Position[]>([]);//liste des joueurs
     const [IaList, setIaList] = useState<Position[]>([]);//liste des joueurs de l'ia
     const [text, setText] = useState('Placer vos joueur sur le terrain');//texte qui affiche le nombre de joueurs
-    const [turn, setTurn] = useState(1);//tour de jeu
+    const [turn, setTurn] = useState(true);//tour de jeu
     const [winner, setWinner] = useState(0);//joueur gagnant
     const [statusJeu, setStatusJeu] = useState(0);//statut du jeu
-    const [actionPosition, setActionPosition] = useState<Position>({ x: 0, y: 0 });//position de l'action
-    const [actionPositionIA, setActionPositionIA] = useState<Position>({ x: 0, y: 0 });//position de l'action de l'ia
-    const [responsePosition, setResponsePosition] = useState({ top: 9, left: 9 });
-    const [viewCroix, setViewCroix] = useState(true);
+    const [responsePosition, setResponsePosition] = useState({ top: 0, left: 0 });
+    const [responsePositionIA, setReponsePositionIA] = useState({ top: 0, left: 0 });
+    const [viewCroix, setViewCroix] = useState(false);
     const [viewRight, setViewRight] = useState(false);
+    const [viewCroixIA, setViewCroixIA] = useState(false);
+    const [viewRightIA, setViewRightIA] = useState(false);
 
-    let a: number = (Dimensions.get('window').width) / 5;
-    let b: number = (Dimensions.get('window').height) / 10;
+
+    const screenWidth = Dimensions.get('window').width;
+    const screenHeight = Dimensions.get('window').height;
+
+    const gridWidth = screenWidth * 0.8;
+    const gridHeight = screenHeight * 0.8;
+
+    const a = gridWidth / 5;
+    const b = gridHeight / 10;
 
     const maxPlayer = 10;
 
@@ -86,9 +94,8 @@ const Game = () => {
 
         setIaList(placementAuto(maxPlayer, IaList));
     }
-
     const placementAuto = (nbJoueur: number, list: Position[]) => {
-        let newIaList = [...list]; // Copie de IaList pour éviter les mutations directes
+        let newIaList = [...list];
         while (newIaList.length < nbJoueur) {
             let x = a + Math.random() * (a * 5);
             let y = b + Math.random() * (b * 10);
@@ -105,7 +112,6 @@ const Game = () => {
         return list;
     }
 
-
     const actack = (event: GestureResponderEvent) => {
         let p: Position = { x: event.nativeEvent.locationX, y: event.nativeEvent.locationY };
         p = TranslateDimension(p);
@@ -117,28 +123,65 @@ const Game = () => {
             setIaList(newList)
             setViewRight(!viewRight)
         }
-        else
-        {
+        else {
             setViewCroix(!viewCroix);
         }
         console.log(p.x, p.y)
+        setTurn(!turn);
+    }
+    const actackIA = () => {
+
+        let x = a + Math.random() * (a * 5);
+        let y = b + Math.random() * (b * 10);
+        let p: Position = { x: x, y: y };
+        p = TranslateDimension(p);
+        let found = maList.some(element => element.x === p.x && element.y === p.y);
+        setReponsePositionIA({ top: p.y, left: p.x });
+
+        if (found) {
+            let newList = maList.filter(item => item.x !== p.x || item.y !== p.y);
+            setList(newList)
+            setViewRightIA(!viewRightIA)
+        }
+        else {
+            setViewCroixIA(!viewCroixIA);
+        }
+        console.log(p.x, p.y)
+        setTurn(!turn);
 
     }
 
     useEffect(() => {
-        if (statusJeu === 1)
+        if (statusJeu === 2)
             generateIaList();
     }, [statusJeu]);
 
     useEffect(() => {
-        if (maList.length === 0) {
-            setStatusJeu(2);
-
+        if (IaList.length === 0 && statusJeu === 2) {
+            setWinner(1);
+            setStatusJeu(0);
         }
-        else {
-            setStatusJeu(3);
+    }, [])
+    useEffect(() => {
+        if (maList.length === 0 && statusJeu === 2) {
+            setStatusJeu(0);
+        }
+        else if (maList.length === maxPlayer) {
+            setStatusJeu(1);
         }
     }, [maList]);
+
+    useEffect(() => {
+        if (statusJeu === 2) {
+            if (turn === false) {
+                setTimeout(() => {
+                    actackIA();
+                }, 1000);
+
+            }
+        }
+    }, [turn])
+
 
     const onTouch = (event: GestureResponderEvent) => {
         if (ok)
@@ -161,34 +204,78 @@ const Game = () => {
         setText(`${i}/${maxPlayer}`);
     }
 
+    const relancer_La_Partie = () => {
+        setStatusJeu(0);
+        setWinner(0);
+        setTurn(false);
+        setIaList([]);
+        setList([]);
+    }
+
+    const whichWinner = () => {
+
+    }
+    const renderEtapePartie = (state: any) => {
+        switch (state) {
+            case 0:
+                return (
+                    <>
+                        <TouchableWithoutFeedback onLongPress={onTouch}>
+                            <View style={styles.container} />
+                        </TouchableWithoutFeedback>
+                        <View style={styles.bottomBar}>
+                            {
+                                <Button title={text} color='rgb(49, 236, 74)' onPress={() => { }} />
+                            }
+
+                        </View>
+                    </>
+                )
+            case 1:
+                return (
+                    <>
+                        <TouchableWithoutFeedback onLongPress={onTouch}>
+                            <View style={styles.container} />
+                        </TouchableWithoutFeedback>
+                        <View style={styles.bottomBar}>
+                            <Button title="Lancer la partie" color='black' onPress={() => { setStatusJeu(2) }} />
+                            <Button title="Replacer les joueurs" color='rgb(49, 236, 74)' onPress={() => { setList([]); setStatusJeu(0) }} />
+
+                        </View>
+                    </>
+                )
+            case 2:
+                return (
+                    <>
+                        {turn && (<TouchableWithoutFeedback onPress={actack}>
+                            <View style={styles.container} />
+                        </TouchableWithoutFeedback>)}
+                        <AnimateElement isVisible={viewCroix} onDisappear={setViewCroix} image={Croix} responsePosition={responsePosition} indice={null} />
+                        <AnimateElement isVisible={viewRight} onDisappear={setViewRight} image={right} responsePosition={responsePosition} indice={1} />
+                        <AnimateElement isVisible={viewCroixIA} onDisappear={setViewCroixIA} image={Croix} responsePosition={responsePositionIA} indice={null} />
+                        <AnimateElement isVisible={viewRightIA} onDisappear={setViewRightIA} image={right} responsePosition={responsePositionIA} indice={1} />
+                        <View style={styles.bottomBar}>
+                            <Button title="Recommencer" color='black' onPress={() => { relancer_La_Partie() }} />
+                            <Button title="Sortir" color='rgb(49, 236, 74)' onPress={() => { setList([]); setStatusJeu(0) }} />
+
+                        </View>
+                    </>
+
+                )
+            default:
+                return null;
+        }
+    }
     return (
         <View style={{ height: '90%' }}>
             {
-                statusJeu === 0 ? (
-                    <TouchableWithoutFeedback onLongPress={onTouch}>
-                        <View style={styles.container} />
-                    </TouchableWithoutFeedback>
-                ) :
-                    (
-                        <TouchableWithoutFeedback onPress={actack}>
-                            <View style={styles.container} />
-                        </TouchableWithoutFeedback>
-                    )
-
+                renderEtapePartie(statusJeu)
             }
-            <AnimateElement isVisible={viewCroix} onDisappear={setViewCroix} image={Croix} responsePosition={responsePosition} indice={null}/>
-            <AnimateElement isVisible={viewRight} onDisappear={setViewRight} image={right} responsePosition={responsePosition} indice={1}/>
+
             <View style={styles.flatList}>
                 <ImageBackground source={gameBackground} style={styles.background}>
-
-                    {ImageList(IaList)}
+                    {ImageList(maList)}
                 </ImageBackground>
-            </View>
-            <View style={styles.bottomBar}>
-                <Button title={text} color='rgb(49, 236, 74)' onPress={() => { }} />
-                <Pressable style={{ backgroundColor: "black", color: "white", padding: 20 }} onPress={() => { setStatusJeu(1); console.log("jeu lancer avec success") }}>
-                    <Text style={{ fontSize: 20, textAlign: "center" }}>Test</Text>
-                </Pressable>
             </View>
 
         </View>
@@ -207,7 +294,7 @@ const styles = StyleSheet.create({
         height: '100%',
         borderWidth: 2,
         borderRadius: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backgroundColor: 'rgba(255, 255, 255, 0.048)',
     },
     fleche:
     {
