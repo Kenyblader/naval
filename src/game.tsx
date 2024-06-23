@@ -9,7 +9,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect } from "react";
-import { Button, Dimensions, GestureResponderEvent, Pressable, Image, ImageBackground, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
+import { Button, Dimensions, GestureResponderEvent, Pressable, Image, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
 import Croix from "./images/croix.png"
@@ -20,7 +20,8 @@ interface Position {
 
 interface reponseAttack {
     p: Position,
-    reponse: boolean
+reponse: boolean
+
 }
 
 const Game = () => {
@@ -33,7 +34,7 @@ const Game = () => {
     const [statusJeu, setStatusJeu] = useState(0);//statut du jeu
     const [actionPosition, setActionPosition] = useState<Position>({ x: 0, y: 0 });//position de l'action
     const [actionPositionIA, setActionPositionIA] = useState<Position>({ x: 0, y: 0 });//position de l'action de l'ia
-    const [responsePosition, setResponsePosition] = useState<reponseAttack>({ p: { x: 90, y: 60 }, reponse: false });//position de la réponse]
+    const [responsePosition, setResponsePosition] = useState<reponseAttack>({ p: { x: 100, y: 100 }, reponse: false });//position de la réponse]
     let a: number = (Dimensions.get('window').width) / 5;
     let b: number = (Dimensions.get('window').height) / 10;
 
@@ -74,10 +75,10 @@ const Game = () => {
     }
 
     const setPosition = (p: Position) => {
-
+        p = TranslateDimension(p);
         return {
             position: 'absolute',
-            top: p.y,
+            top: (p.y + 9),
             left: p.x,
         }
     }
@@ -111,6 +112,7 @@ const Game = () => {
         let found = IaList.some(element => element.x === p.x && element.y === p.y);
         if (found) {
             let newList = IaList.filter(item => item.x !== p.x || item.y !== p.y);
+            setResponsePosition({ p: p, reponse: false });
             setIaList(newList)
             setResponsePosition({ p: p, reponse: true });
         }
@@ -157,7 +159,12 @@ const Game = () => {
                     </TouchableWithoutFeedback>
                 )
             }
-            <Image source={Croix} style={[{width: 30, height: 35},setPosition(responsePosition.p)]}/>
+            <TouchableWithoutFeedback onPress={actack}>
+                <View style={styles.container} />
+            </TouchableWithoutFeedback>
+            <Animated.View style={setPosition(responsePosition.p)}>
+                <Image source={Croix} style={[{ width: 30, height: 35 }]} />
+            </Animated.View>
             <View style={styles.flatList}>
                 <ImageBackground source={gameBackground} style={styles.background}>
                     {ImageList(IaList)}
