@@ -1,24 +1,84 @@
 import auth from '@react-native-firebase/auth'
 import firebase from '@react-native-firebase/app'
-import database from '@react-native-firebase/database'
-import 'firebase'
+import firestore, { FieldValue } from '@react-native-firebase/firestore';
+import { resolver } from './metro.config';
 
-firebase.initializeApp({
-    apiKey: 'YOUR_API_KEY',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    databaseURL: 'YOUR_DATABASE_URL',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    appId: 'YOUR_APP_ID'
-  })
 
-  const writeDataToFirestore = async (collection, data) => {
-    try {
-      const ref = firebase.firestore().collection(collection).doc()
-      const response = await ref.set(data)
-      return response
-    } catch (error) {
-      return error
-    }
+
+export interface joueur{
+  mail:string,
+  name:string
+}
+
+export interface partie{
+  hote:string,
+  joueurs:joueur[]
+}
+
+export const collectionPartie='partie'
+
+
+export const createPartie=()=>{
+  console.log(auth().currentUser)
+  const mailUser=auth().currentUser?.email
+  let nameUser=mailUser?.split('@')[0]
+  if(nameUser==null || mailUser==null)
+    return false;
+  const data:partie={
+    hote: nameUser,
+    joueurs: [{
+      name:nameUser,
+      mail:mailUser
+    }]
   }
+  const partieRef=firestore().collection(collectionPartie).doc(nameUser).set(data)
+  .then((ok)=>{console.log('reussit:'+ok);return true})
+  .catch((error)=>{console.log('erreur:'+error); return false})
+  return false;
+}
+
+export type NavigateFunction = (url: string) => void;
+
+export const rejoindrePartie=async (id:string)=>{
+  const mailUser=auth().currentUser?.email
+  let nameUser=mailUser?.split('@')[0]
+  if(nameUser==null || mailUser==null)
+    return false;
+  const data:joueur={
+    name:nameUser,
+    mail:mailUser
+  }
+  firestore().collection(collectionPartie).doc(id).update({
+    joueurs:FieldValue.arrayUnion(data)})
+    .then((ok)=>{console.log("reussite:"+ok); return true    })
+    .catch((error)=>{console.log('erreur: '+error); return false})
+    return false;
+}
+
+export async function  ecouteEventParties():Promise<string[]> {
+  const mailUser=auth().currentUser?.email
+  return new Promise((resolve,reject)=>{
+    firestore().collection(collectionPartie).onSnapshot(
+      snapshot=>{ 
+        const documentIds: string[] = [];
+        snapshot.forEach((doc) => {
+          documentIds.push(doc.id);
+        });
+        console.log(documentIds);
+      resolve(documentIds)}
+     ,
+      error=>{console.log('erreur de lecture de la collection des partie'+error); reject(error)}
+    )
+  }) 
+ 
+}
+
+export const ecouteEventPartie=(id:string):joueur[]=>{
+  firestore().collection(collectionPartie).doc(id).onSnapshot(
+    snapshot=>{ console.log('collection  lu avec succes: '+snapshot.data);  return snapshot.data}
+   ,
+    error=>{console.log('erreur de lecture de la collection des partie'+error); return []}
+  )
+  return []
+}
+

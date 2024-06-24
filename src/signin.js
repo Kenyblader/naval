@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Button, Image, StyleSheet, Text, TextInput, View,ActivityIndicator } from "react-native";
+import { Button, Image, StyleSheet, Text, TextInput, View,ActivityIndicator,TouchableOpacity } from "react-native";
 import auth from '@react-native-firebase/auth'
 import cadena from './images/cadenas.png';
 import user from './images/utilisateur.png'
 import defaultExport from "@react-native-firebase/auth";
+import { colorTitle } from "./login";
 
 const Signin=(navigation)=>{
     const [id,setId]=useState('');
@@ -38,41 +39,49 @@ const Signin=(navigation)=>{
        
     }
     return(
-    <View style={styles.container}>
+        <View style={styles.container}>
             
-        <Text style={styles.text}>Email</Text>
-        <View style={{flexDirection:'row', alignItems:'center',justifyContent:'center',width:'100%',marginBottom:30}}>
+        <Text style={styles.text}>Inscriver vous</Text>
+        <View style={styles.contaireInput}>
             <Image source={user} style={{width:50,height:50}}></Image>
-            <TextInput onChangeText={setId} style={styles.input}></TextInput>
+            <TextInput value={id} onChangeText={setId}  style={styles.input} placeholder="Email" placeholderTextColor='darkgray'></TextInput>
         </View> 
-        <Text  style={styles.text}>password</Text>
-        <View style={{ flexDirection:'row',justifyContent:'center',alignItems:'center',width:'100%',marginBottom:30}}>
+        <View style={styles.contaireInput}>
             <Image source={cadena} style={{width:50,height:50}}></Image>
-            <TextInput secureTextEntry onChangeText={setPass} style={styles.input}></TextInput>
+            <TextInput secureTextEntry={true} value={pass} onChangeText={setPass} placeholder="password"  placeholderTextColor='darkgray' style={styles.input}></TextInput>
         </View> 
-        <Button title="s'inscrire" onPress={connect}></Button>
-         <Text style={styles.Error}>{erreur}</Text>
-         {isLoding && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2c5fd4" />
-          <Text>Chargement en cours...</Text>
+       <View style={{flexDirection:'column',justifyContent:'space-between', width:'70%'}}>
+            <Button title="s'inscrire" onPress={connect}></Button>
+            
         </View>
-      )}
-        
+        {isLoding &&(
+        <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2c5fd4" />
+            <Text style={{color:'darkgray'}}>Chargement en cours...</Text>
+          </View>)}
+          <Text  style={styles.Error}>{erreur}</Text>
     </View>
     )
 }
 
 
 let styles=StyleSheet.create({
+    contaireInput:{
+        flexDirection:'row',
+       
+        width:'80%',
+        marginBottom:30,
+        borderWidth:1.5,
+        padding:3,
+        borderRadius:7,
+    },
     input:{
         width:'70%',
         height:50,
-        borderWidth:1,
-        borderRadius:7,
         padding:3,
-        fontSize:30,
-        backgroundColor:'darkgray'
+        fontSize:20,
+        color:'black'
+       // backgroundColor:'darkgray'
     }, loadingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -81,7 +90,6 @@ let styles=StyleSheet.create({
     container:{
         flex:1,
         flexDirection:"column",
-        backgroundColor:"cyan",
         alignItems:"center",
     },
     Error:{
@@ -89,7 +97,17 @@ let styles=StyleSheet.create({
     },
     text:{
         fontSize:30,
-        color:'darkgray'
+        color:colorTitle,
+        marginBottom:'20%',
+        marginTop:'5%',
+        fontWeight:'700'
+    },
+    sign:{
+        textDecorationLine:'underline',
+        fontWeight:'bold',
+        color:'black',
+        marginLeft:'20%',
+        fontSize:17
     }
 });
 export default Signin;

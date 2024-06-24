@@ -6,7 +6,7 @@ import auth from '@react-native-firebase/auth'
 import cadena from './images/cadenas.png';
 import user from './images/utilisateur.png'
 
-
+export const colorTitle='#526dd6'
 function Login({navigation}){
     const [id,setId]=useState('');
     const [pass,setPass]=useState('')
@@ -22,21 +22,26 @@ function Login({navigation}){
         
        auth().signInWithEmailAndPassword(id,pass).
        then(()=>{
-        setId('')
-        setError('')
-        setPass('')
-        setLoding(false)
+        clearInput()
        
         navigation.navigate('Menu')
        })
        .catch(()=>{
-        setLoding(false)
+            setLoding(false)
             setError('login failed')
        })
        
     }
 
+    const clearInput=()=>{
+        setId('')
+        setError('')
+        setPass('')
+        setLoding(false)
+    }
+
     const Signin=()=>{
+        clearInput()
         navigation.navigate('Sign In')
     }
 
@@ -46,15 +51,15 @@ function Login({navigation}){
         <View style={styles.container}>
             
             <Text style={styles.text}>Connecter vous</Text>
-            <View style={{flexDirection:'row',  alignItems:'center',justifyContent:'center',width:'100%',marginBottom:30}}>
+            <View style={styles.contaireInput}>
                 <Image source={user} style={{width:50,height:50}}></Image>
                 <TextInput value={id} onChangeText={setId}  style={styles.input} placeholder="Email" placeholderTextColor='darkgray'></TextInput>
             </View> 
-            <View style={{ flexDirection:'row',justifyContent:'center',alignItems:'center',width:'100%',marginBottom:30}}>
+            <View style={styles.contaireInput}>
                 <Image source={cadena} style={{width:50,height:50}}></Image>
                 <TextInput secureTextEntry={true} value={pass} onChangeText={setPass} placeholder="password"  placeholderTextColor='darkgray' style={styles.input}></TextInput>
             </View> 
-           <View style={{flexDirection:'column',justifyContent:'space-between', width:'70%',position:'relative',left:25}}>
+           <View style={{flexDirection:'column',justifyContent:'space-between', width:'70%'}}>
                 <Button title="connect" onPress={connect}></Button>
                 <TouchableOpacity onPress={Signin} style={{marginVertical:20}}>
                 <Text style={styles.sign}>je n'ai pas de compte</Text>
@@ -76,10 +81,8 @@ function Login({navigation}){
 
 let styles=StyleSheet.create({
     input:{
-        width:'70%',
+       flex:1,
         height:50,
-        borderWidth:1,
-        borderRadius:7,
         padding:3,
         fontSize:20,
         color:'black'
@@ -99,9 +102,10 @@ let styles=StyleSheet.create({
     },
     text:{
         fontSize:30,
-        color:'black',
+        color:colorTitle,
         marginBottom:'20%',
-        marginTop:'5%'
+        marginTop:'5%',
+        fontWeight:'700'
     },
     sign:{
         textDecorationLine:'underline',
@@ -109,6 +113,16 @@ let styles=StyleSheet.create({
         color:'black',
         marginLeft:'20%',
         fontSize:17
+    },
+    contaireInput:{
+        flexDirection:'row',
+        alignItems:'center',
+        justifyContent:'center',
+        width:'80%',
+        marginBottom:30,
+        borderWidth:1.5,
+        padding:3,
+        borderRadius:7,
     }
 });
 
