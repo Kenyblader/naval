@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native"
-import { createPartie, ecouteEventPartie, ecouteEventParties, joueur, rejoindrePartie } from "../database"
+import { createPartie, ecouteEventPartie,subscribeToFirestoreUpdates, ecouteEventParties, joueur, rejoindrePartie } from "../database"
 import { colorTitle } from "./login"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { NavigationAction, NavigationProp, NavigatorScreenParams, ParamListBase, useNavigation } from "@react-navigation/native"
@@ -12,15 +12,16 @@ export const userSalon=({navigation})=>{
     const [istcreate,setCreate]=useState(false)
     const [player,setPlayer]=useState([])
     const [isLoding,setLoding]=useState(false)
-    let id=0;
+    const[id,setId]=useState('')
 
     useEffect(()=>{
         setLoding(true)
-        console.log('debut use')
-        ecouteEventPartie()
-            .then(names=>{setLoding(false);setPlayer(names.joueurs);console.log(names);id=names.hote})
-            .catch(error=>{setLoding(false);console.log(error)}) 
-        console.log('useEffect') 
+        const val=subscribeToFirestoreUpdates((data)=>{
+            setPlayer(data.joueurs)
+            setId(data.hote)
+            setLoding(false)
+        })
+        return()=>val()
        },[] )
 
     if(isLoding)
@@ -61,7 +62,7 @@ export const otherSalon= ({navigation})=>{
     function  connecter(id:string){
         console.log("ok")
         rejoindrePartie(id)
-        .then(()=>{navigation.navigate('Partie',{isHote:false,receiver:id,idPartie:id})})
+        .then(()=>{navigation.navigate('Partie',{isHote:false,receiver:id,idPartie})})
         .catch((error)=>{console.log(error)})
     }
 

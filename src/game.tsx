@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Dimensions, GestureResponderEvent, Image, ImageBackground, NativeEventEmitter, Pressable, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
 import { useRoute } from "@react-navigation/native";
 import { colorTitle } from "./login";
-import { lancerPartie } from "../database";
+import { getAdverseConstaintScreen, initAUser, lancerAttaque, lancerPartie, subscribeToFirestoreUpdates, subscribeToPositions } from "../database";
+import { transformer } from "../metro.config";
 
 
  interface Position{
@@ -19,9 +20,25 @@ const Game=({navigation}:any)=>{
     const [maList,setList]=useState<Position[]>([]);
     const [text,setText]=useState('En Attente ...');
     const [heightSreen,setHeightScreen]= useState('95%')
+    const [isFirstTime,setFirstTime]=useState(true)
     const root=useRoute()
     const{isHote,receiver,idPartie}:any=root.params;
     const [isBegining,setBegining]=useState(false)
+    const [adverseConstaintScreen,setAdverseConstainScreen]=useState<Position>()
+
+    useEffect(()=>{
+        
+    if(!isHote){
+       const val=subscribeToFirestoreUpdates((data)=>{
+            if(data.statut)
+                hangleFunction()
+        })
+    }
+        const val=subscribeToPositions((data)=>{
+           if(data)
+            reciveAttaque(data.position)
+        })
+    },[])
    
 
     let a:number=(Dimensions.get('window').width)/5;
@@ -63,21 +80,61 @@ const Game=({navigation}:any)=>{
         return {x:(x2),y:(y2)};
      }
 
+     function correctDimention(p:Position){
+        let x=p.x;
+        let y=p.y;
+        x=x*a/adverseConstaintScreen?.x;
+        y=y*b/adverseConstaintScreen?.y;
+
+     }
+
+     function reciveAttaque(p:Position){
+        let p2=TranslateDimension(p)
+        p=TranslateDimension(p);
+        let i=maList.length;
+        let found:boolean=false;
+        maList.forEach(element => {
+            if(element.x==p.x && element.y==p.y){
+                found=true;
+            }
+        });
+        if(found)
+            {
+                let newList=maList.filter(item=>(item.x!==p.x || item.y!==p.y));
+                setList(newList);
+                i--;
+            }
+     }
+
+     function setAttack(p:Position){
+        lancerAttaque(p,receiver)
+     }
+
+
      function hangleFunction(){
+        setHeightScreen('100%');
+        setBegining(true)
+        initAUser(a,b)
         if(isHote){
-            setHeightScreen('100%');
-             setBegining(true)
              lancerPartie(idPartie)
-        }
+        }   
      }
 
   
     function  onTouch(even:GestureResponderEvent){
-        if(isBegining)
-            return ;
+            
         let i=maList.length;
         let p:Position={x:even.nativeEvent.locationX,y:even.nativeEvent.locationY};
         p=TranslateDimension(p);
+        if(isBegining){
+            if(isFirstTime)
+            {
+                    setAdverseConstainScreen(getAdverseConstaintScreen(receiver))
+                    setFirstTime(false)
+            }
+            setAttack(p)
+            return;
+        }else{
         let found:boolean=false;
         maList.forEach(element => {
             if(element.x==p.x && element.y==p.y){
@@ -95,6 +152,7 @@ const Game=({navigation}:any)=>{
             setList(newList);
             i--;
         }
+    }
        
     }
 
@@ -109,7 +167,7 @@ const Game=({navigation}:any)=>{
         </ImageBackground>
         </View>
         <View style={styles.bottomBar}>
-            <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={()=>{}}>
+            <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={hangleFunction}>
                 <Text style={{fontSize:20,fontWeight:'bold'}}>{text}</Text>
             </Pressable>
         </View>
