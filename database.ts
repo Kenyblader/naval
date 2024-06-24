@@ -11,6 +11,7 @@ export interface joueur{
 }
 
 export interface partie{
+  statut:Boolean
   hote:string,
   joueurs:joueur[]
 }
@@ -25,6 +26,7 @@ export const createPartie=()=>{
   if(nameUser==null || mailUser==null)
     return false;
   const data:partie={
+    statut  :false,
     hote: nameUser,
     joueurs: [{
       name:nameUser,
@@ -85,4 +87,17 @@ export const ecouteEventPartie=async():Promise<any>=>{
   )
   })
 }
+
+export const lancerPartie =(id:string)=>{
+  firestore().collection(collectionPartie).doc(id).update({ status:true })
+  .then(()=>{
+    return true;
+  })
+  .catch((error)=>{
+    console.log('erreur' +error)
+    return false;
+  })
+}
+
+
 

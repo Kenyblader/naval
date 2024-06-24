@@ -4,6 +4,7 @@ import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
 import { useRoute } from "@react-navigation/native";
 import { colorTitle } from "./login";
+import { lancerPartie } from "../database";
 
 
  interface Position{
@@ -19,7 +20,7 @@ const Game=({navigation}:any)=>{
     const [text,setText]=useState('En Attente ...');
     const [heightSreen,setHeightScreen]= useState('95%')
     const root=useRoute()
-    const{isHote,receiver}:any=root.params;
+    const{isHote,receiver,idPartie}:any=root.params;
     const [isBegining,setBegining]=useState(false)
    
 
@@ -64,7 +65,9 @@ const Game=({navigation}:any)=>{
 
      function hangleFunction(){
         if(isHote){
-
+            setHeightScreen('100%');
+             setBegining(true)
+             lancerPartie(idPartie)
         }
      }
 
@@ -106,7 +109,7 @@ const Game=({navigation}:any)=>{
         </ImageBackground>
         </View>
         <View style={styles.bottomBar}>
-            <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={()=>{setHeightScreen('100%'); setBegining(true)}}>
+            <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={()=>{}}>
                 <Text style={{fontSize:20,fontWeight:'bold'}}>{text}</Text>
             </Pressable>
         </View>
