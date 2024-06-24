@@ -10,12 +10,16 @@
 /* eslint-disable no-unused-vars */
 
 import React, { useState } from "react";
-import { Text, TextInput, View, Button, StyleSheet, Image, ActivityIndicator, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, Image, ActivityIndicator, TouchableOpacity } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { TextInput, Button } from "react-native-paper";
+import { showToast, ToastModule } from "./compenents/toast.js";
+
 import auth from '@react-native-firebase/auth'
 import cadena from './images/cadenas.png';
 import user from './images/utilisateur.png'
+import logo from "./images/29ppi/logo.png";
 
 
 function Login({ navigation }) {
@@ -26,7 +30,8 @@ function Login({ navigation }) {
 
     const connect = () => {
         if (id == '' || pass == '') {
-            setError('veuiller entrer des valeurs')
+            // setError('veuiller entrer des valeurs')
+            showToast("error", "Notifications", "veuiller entrer des valeurs", "top")
             return;
         }
         setLoding(true)
@@ -42,7 +47,8 @@ function Login({ navigation }) {
             })
             .catch(() => {
                 setLoding(false)
-                setError('login failed')
+                // setError('login failed')
+                showToast("error", "Notifications", "Erreur Login", "top")
             })
 
     }
@@ -51,35 +57,117 @@ function Login({ navigation }) {
         navigation.navigate('Sign In')
     }
 
+    const Login = () => {
 
+        return (<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <View style={login.rectangleView}>
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                    <Image source={logo} style={{ marginTop: 30 }} />
+                    <Text style={{ marginTop: 30, fontFamily: "DIN Black", fontWeight: "bold", fontSize: 20 }}>Connecter vous</Text>
+                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", width: "80%" }}>
+                        <TextInput
+                            label="Email"
+                            value={id}
+                            onChangeText={text_val => setId(text_val)}
+                            style={login.input}
+                            mode="outlined"
+                            keyboardType="email-address"
+                        />
+                        <TextInput
+                            label="Mot de passe"
+                            value={pass}
+                            onChangeText={password_val => setPass(password_val)}
+                            style={login.input}
+                            mode="outlined"
+                            secureTextEntry
+                        />
+
+                        <Button mode="contained" labelStyle={{ color: "white", fontSize: 18 }} style={[login.btn, { marginTop: 25, marginBottom: 10 }]} onPress={connect}>Connection</Button>
+                        <Button labelStyle={{ textDecorationLine: "underline" }} onPress={Signin}>Je n'ai pas de compte</Button>
+                        {isLoding && (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color="#2c5fd4" />
+                                <Text style={{ color: 'darkgray' }}>Chargement en cours...</Text>
+                            </View>)}
+                    </View>
+                </View>
+            </View>
+
+        </View>)
+    }
+
+    const kenyCode = () => {
+
+
+        return (
+            <View style={styles.container}>
+                <Text style={styles.text}>Connecter vous</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: 30 }}>
+                    <Image source={user} style={{ width: 50, height: 50 }}></Image>
+                    <TextInput value={id} onChangeText={setId} style={styles.input} placeholder="Email" placeholderTextColor='darkgray'></TextInput>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%', marginBottom: 30 }}>
+                    <Image source={cadena} style={{ width: 50, height: 50 }}></Image>
+                    <TextInput secureTextEntry={true} value={pass} onChangeText={setPass} placeholder="password" placeholderTextColor='darkgray' style={styles.input}></TextInput>
+                </View>
+                <View style={{ flexDirection: 'column', justifyContent: 'space-between', width: '70%', position: 'relative', left: 25 }}>
+                    <Button title="connect" onPress={connect}></Button>
+                    <TouchableOpacity onPress={Signin} style={{ marginVertical: 20 }}>
+                        <Text style={styles.sign}>je n'ai pas de compte</Text>
+                    </TouchableOpacity>
+
+                </View>
+                {isLoding && (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#2c5fd4" />
+                        <Text style={{ color: 'darkgray' }}>Chargement en cours...</Text>
+                    </View>)}
+                <Text style={styles.Error}>{error}</Text>
+            </View>
+        );
+    }
 
     return (
-        <View style={styles.container}>
+        <>
+            {ToastModule()}
 
-            <Text style={styles.text}>Connecter vous</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: 30 }}>
-                <Image source={user} style={{ width: 50, height: 50 }}></Image>
-                <TextInput value={id} onChangeText={setId} style={styles.input} placeholder="Email" placeholderTextColor='darkgray'></TextInput>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%', marginBottom: 30 }}>
-                <Image source={cadena} style={{ width: 50, height: 50 }}></Image>
-                <TextInput secureTextEntry={true} value={pass} onChangeText={setPass} placeholder="password" placeholderTextColor='darkgray' style={styles.input}></TextInput>
-            </View>
-            <View style={{ flexDirection: 'column', justifyContent: 'space-between', width: '70%', position: 'relative', left: 25 }}>
-                <Button title="connect" onPress={connect}></Button>
-                <TouchableOpacity onPress={Signin} style={{ marginVertical: 20 }}>
-                    <Text style={styles.sign}>je n'ai pas de compte</Text>
-                </TouchableOpacity>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <View style={login.rectangleView}>
+                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                        <Image source={logo} style={{ marginTop: 30 }} />
+                        <Text style={{ marginTop: 30, fontFamily: "DIN Black", fontWeight: "bold", fontSize: 20 }}>Connecter vous</Text>
+                        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", width: "80%" }}>
+                            <TextInput
+                                label="Email"
+                                value={id}
+                                onChangeText={text_val => setId(text_val)}
+                                style={login.input}
+                                mode="outlined"
+                                keyboardType="email-address"
+                            />
+                            <TextInput
+                                label="Mot de passe"
+                                value={pass}
+                                onChangeText={password_val => setPass(password_val)}
+                                style={login.input}
+                                mode="outlined"
+                                secureTextEntry
+                            />
+
+                            <Button mode="contained" labelStyle={{ color: "white", fontSize: 18 }} style={[login.btn, { marginTop: 25, marginBottom: 10 }]} onPress={connect}>Connection</Button>
+                            <Button labelStyle={{ textDecorationLine: "underline" }} onPress={Signin}>Je n'ai pas de compte</Button>
+                            {isLoding && (
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator size="large" color="#2c5fd4" />
+                                    <Text style={{ color: 'darkgray' }}>Chargement en cours...</Text>
+                                </View>)}
+                        </View>
+                    </View>
+                </View>
 
             </View>
-            {isLoding && (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#2c5fd4" />
-                    <Text style={{ color: 'darkgray' }}>Chargement en cours...</Text>
-                </View>)}
-            <Text style={styles.Error}>{error}</Text>
-        </View>
-    );
+        </>
+    )
 }
 
 
@@ -122,5 +210,33 @@ let styles = StyleSheet.create({
         fontSize: 17
     }
 });
+
+const login = StyleSheet.create(
+    {
+        rectangleView: {
+            shadowColor: "rgba(0, 0, 0, 0.25)",
+            shadowOffset: {
+                width: 0,
+                height: 7
+            },
+            shadowRadius: 20,
+            elevation: -1,
+            shadowOpacity: 1,
+            borderRadius: 20,
+            backgroundColor: "#fff",
+            width: "90%",
+            height: 570
+            , padding: 20
+        }, input: {
+            marginTop: 20,
+            width: "100%"
+        }
+        , btn:
+        {
+            borderRadius: 10,
+            backgroundColor: "#3a4de5",
+        }
+    }
+)
 
 export default Login;

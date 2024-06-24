@@ -49,7 +49,7 @@ function App(): React.JSX.Element {
   return (
    <NavigationContainer >
     <Stack.Navigator screenOptions={{headerShown:false}}>
-      <Stack.Screen   name="Login" component={Game}/>
+      <Stack.Screen   name="Login" component={Login}/>
       <Stack.Screen name="Partie" component={Game}/>
       <Stack.Screen name="Sign In" component={Signin}/>
       <Stack.Screen name="Menu" component={Menu}/>
