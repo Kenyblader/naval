@@ -32,12 +32,11 @@ export const createPartie=()=>{
     }]
   }
   const partieRef=firestore().collection(collectionPartie).doc(nameUser).set(data)
-  .then((ok)=>{console.log('reussit:'+ok);return true})
-  .catch((error)=>{console.log('erreur:'+error); return false})
-  return false;
+  .then((ok)=>{console.log('reussit:'+ok);return nameUser})
+  .catch((error)=>{console.log('erreur:'+error); return null})
+  return null;
 }
 
-export type NavigateFunction = (url: string) => void;
 
 export const rejoindrePartie=async (id:string)=>{
   const mailUser=auth().currentUser?.email
@@ -73,12 +72,17 @@ export async function  ecouteEventParties():Promise<string[]> {
  
 }
 
-export const ecouteEventPartie=(id:string):joueur[]=>{
+export const ecouteEventPartie=async():Promise<any>=>{
+  const mailUser=auth().currentUser?.email
+  if(!mailUser)
+      return []
+  return new Promise((resolve,reject)=>{
+    let id:string=mailUser?.split('@')[0]
   firestore().collection(collectionPartie).doc(id).onSnapshot(
-    snapshot=>{ console.log('collection  lu avec succes: '+snapshot.data);  return snapshot.data}
+    snapshot=>{ console.log('collection  lu avec succes: '+snapshot.data());  resolve(snapshot.data())}
    ,
-    error=>{console.log('erreur de lecture de la collection des partie'+error); return []}
+    error=>{console.log('erreur de lecture de la collection des partie'+error); reject("erreur")}
   )
-  return []
+  })
 }
 

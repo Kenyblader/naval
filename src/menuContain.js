@@ -1,43 +1,49 @@
 import { useEffect, useState } from "react"
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native"
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native"
 import { createPartie, ecouteEventPartie, ecouteEventParties, joueur, rejoindrePartie } from "../database"
 import { colorTitle } from "./login"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { NavigationAction, NavigationProp, NavigatorScreenParams, ParamListBase, useNavigation } from "@react-navigation/native"
+import ready from './images/checked.png'
+import configure from './images/setting.png'
 
-const player:joueur[]=[
-    {name:"joueur1",mail:''},
-    {name:"joueur2",mail:''},
-    {name:"joueur3",mail:''},
-]
 
 export const userSalon=({navigation})=>{
     const [istcreate,setCreate]=useState(false)
     const [idPartie,setIdPartie]=useState('')
-    
-    function InitialisePArtie(){
-        createPartie()
-        setCreate(true)
-    }
+    const [player,setPlayer]=useState([])
+    const [isLoding,setLoding]=useState(false)
 
+    useEffect(()=>{
+        setLoding(true)
+        console.log('debut use')
+        ecouteEventPartie()
+            .then(names=>{setLoding(false);setPlayer(names.joueurs);console.log(names)})
+            .catch(error=>{setLoding(false);console.log(error)}) 
+        console.log('useEffect') 
+       },[] )
 
-    if(istcreate)
-        return(<SafeAreaView style={{flex:1}}>
-            <FlatList data={player} style={{flex:2}} renderItem={item=>
-                <View style={styles.playerContainer}>
-                    <Text style={styles.text}>{item.item.name}</Text>
-                </View>
-            } />
-        </SafeAreaView>)
+    if(isLoding)
+        return <ActivityIndicator size='large' color={colorTitle}></ActivityIndicator>;
     else
-    return(<View style={{flex:1}}>
-        <TouchableNativeFeedback onPress={InitialisePArtie}>
-            <View style={styles.container}>
-                <Text style={styles.text}>creer une partie</Text>
+       return(<><View style={{flex:1}}>
+        <FlatList data={player} style={{flex:2}} renderItem={item=>
+            <View style={styles.playerContainer}>
+                <Text style={styles.text}>{item.item.name}</Text>
             </View>
-        </TouchableNativeFeedback>
-    </View>)
+        } />
+       
+    </View>
+    <View style={{ width:'100%', flexDirection:'row',  alignItems:'center',paddingHorizontal:'45%'}}>
+            <Pressable onPress={()=>{navigation.navigate('Partie',{isHote:true,receiver:player[0].name})}}>
+                <Image source={ready}  style={styles.image}></Image>
+            </Pressable>
+        </View>
+    </>)
+
+
 }
+
 
 
 
@@ -55,7 +61,7 @@ export const otherSalon= ({navigation})=>{
     function  connecter(id:string){
         console.log("ok")
         rejoindrePartie(id)
-        .then(()=>{navigation.navigate('Partie')})
+        .then(()=>{navigation.navigate('Partie',{isHote:false,receiver:id})})
         .catch((error)=>{console.log(error)})
     }
 
@@ -83,6 +89,11 @@ const styles=StyleSheet.create({
         borderRadius:20,
         padding:10,
         marginVertical:'50%'
+    },
+    image:{
+        width:50,
+        marginHorizontal:10,
+        height:50
     },
     text:{
         fontSize:18,

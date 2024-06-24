@@ -25,7 +25,7 @@ const Signin=(navigation)=>{
             setId('')
             setLoding(false)
             setPass('')
-            navigation.navigate('Menu')
+            navigation.navigate('Choice')
         })
         .catch(error=>{
             setLoding(false)

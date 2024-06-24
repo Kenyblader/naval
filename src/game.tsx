@@ -1,17 +1,27 @@
 import { useState } from "react";
-import { Button, Dimensions, GestureResponderEvent, Image, ImageBackground, NativeEventEmitter, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Button, Dimensions, GestureResponderEvent, Image, ImageBackground, NativeEventEmitter, Pressable, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
+import { useRoute } from "@react-navigation/native";
+import { colorTitle } from "./login";
 
 
  interface Position{
     x:number
     y:number
  }
-const Game=()=>{
-    let ok:Boolean=false;
+
+ interface roorReceiver {
+    isHote:Boolean,receiver:string
+ }
+const Game=({navigation}:any)=>{
     const [maList,setList]=useState<Position[]>([]);
-    const [text,setText]=useState('Placer vos joueur sur le terrain');
+    const [text,setText]=useState('En Attente ...');
+    const [heightSreen,setHeightScreen]= useState('95%')
+    const root=useRoute()
+    const{isHote,receiver}:any=root.params;
+    const [isBegining,setBegining]=useState(false)
+   
 
     let a:number=(Dimensions.get('window').width)/5;
     let b:number=(Dimensions.get('window').height)/10;
@@ -52,9 +62,15 @@ const Game=()=>{
         return {x:(x2),y:(y2)};
      }
 
+     function hangleFunction(){
+        if(isHote){
+
+        }
+     }
+
   
     function  onTouch(even:GestureResponderEvent){
-        if(ok)
+        if(isBegining)
             return ;
         let i=maList.length;
         let p:Position={x:even.nativeEvent.locationX,y:even.nativeEvent.locationY};
@@ -76,12 +92,10 @@ const Game=()=>{
             setList(newList);
             i--;
         }
-
-        setText(i+'/'+maxPlayer)
        
     }
 
-    return(<View style={{height:'90%'}}>
+    return(<View style={{height:heightSreen}}>
         <TouchableWithoutFeedback onLongPress={onTouch}>
         <View style={styles.container} >
         </View>
@@ -92,7 +106,9 @@ const Game=()=>{
         </ImageBackground>
         </View>
         <View style={styles.bottomBar}>
-            <Button title={text} color='rgb(49, 236, 74)'   onPress={()=>{}}></Button>
+            <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={()=>{setHeightScreen('100%'); setBegining(true)}}>
+                <Text style={{fontSize:20,fontWeight:'bold'}}>{text}</Text>
+            </Pressable>
         </View>
         </View>
     );
@@ -151,6 +167,7 @@ const styles=StyleSheet.create({
         position:'absolute',
         top:'100%',
         width:'100%',
+        height:'100%',
         backgroundColor:'red',
         flex:1
       }

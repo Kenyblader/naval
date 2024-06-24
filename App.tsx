@@ -31,6 +31,7 @@ import {
 import Game from './src/game';
 import Signin from './src/signin';
 import Menu from './src/menu';
+import ChoiceScreen from './src/choiceScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -49,29 +50,12 @@ function App(): React.JSX.Element {
       <Stack.Screen name='Partie' component={Game}/>
       <Stack.Screen name='Sign In' component={Signin}/>
       <Stack.Screen name='Menu' component={Menu}/>
+      <Stack.Screen name='Choice' component={ChoiceScreen} />
     </Stack.Navigator>
    </NavigationContainer>
    
   );
 }
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;

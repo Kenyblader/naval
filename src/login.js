@@ -24,7 +24,7 @@ function Login({navigation}){
        then(()=>{
         clearInput()
        
-        navigation.navigate('Menu')
+        navigation.navigate('Choice')
        })
        .catch(()=>{
             setLoding(false)
