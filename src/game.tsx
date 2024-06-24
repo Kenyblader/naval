@@ -16,6 +16,7 @@ import Croix from "./images/croix.png";
 import right from "./images/Fleche.png";
 import AnimateElement from "./compenents/croix_fleche";
 import MyModal from "./compenents/Modal";
+import firestore from '@react-native-firebase/firestore';
 interface Position {
     x: number | any
     y: number | any
@@ -44,8 +45,6 @@ const Game = () => {
     const [viewRightIA, setViewRightIA] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [confirm, setConfirm] = useState(false);
-
-
 
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
@@ -294,7 +293,7 @@ const Game = () => {
                         <AnimateElement isVisible={viewRightIA} onDisappear={setViewRightIA} image={right} responsePosition={responsePositionIA} indice={1} />
                         <View style={styles.bottomBar}>
                             <Button title="Recommencer" color='black' onPress={() => { setConfirm(!confirm) }} />
-                            <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", backgroundColor: "rgb(49, 236, 74)", padding: 20}}>
+                            <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", backgroundColor: "rgb(49, 236, 74)", padding: 20 }}>
                                 <Text style={{ color: "white" }}>
                                     {text1}
                                 </Text>
@@ -311,6 +310,7 @@ const Game = () => {
                 return null;
         }
     }
+
     return (
         <View style={{ height: '90%' }}>
             {
