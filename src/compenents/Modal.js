@@ -5,7 +5,7 @@
 import React from 'react';
 import { View, StyleSheet, Modal, Text, TouchableOpacity } from 'react-native';
 
-const ModalCard = ({ visible, onClose, title, message, onPress, info, text1, text2 }) => {
+const ModalCard = ({ visible, onClose, title, message, onPress, info, text1, text2, component }) => {
     return (
         <Modal
             animationType="slide"
@@ -17,6 +17,8 @@ const ModalCard = ({ visible, onClose, title, message, onPress, info, text1, tex
                 <View style={styles.modalView}>
                     <Text style={[styles.modalTitle, { color: "black" }]}>{title}</Text>
                     <Text style={[styles.modalMessage, { color: "black" }]}>{message}</Text>
+                    {component && component}
+
                     <View style={[{ width: 200 }, !info && { justifyContent: "space-around", alignItems: "center", display: "flex", flexDirection: "row" }]}>
                         <TouchableOpacity
                             style={styles.openButton}

@@ -9,14 +9,14 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect } from "react";
-import { Button, Dimensions, GestureResponderEvent, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View } from "react-native";
+import { Button, Dimensions, GestureResponderEvent, ImageBackground, Animated, StyleSheet, TouchableWithoutFeedback, Text, View, FlatList } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg';
 import Croix from "./images/croix.png";
 import right from "./images/Fleche.png";
 import AnimateElement from "./compenents/croix_fleche";
 import MyModal from "./compenents/Modal";
-import firestore from '@react-native-firebase/firestore';
+import LeaderboardRow from "./compenents/leadBoard";
 interface Position {
     x: number | any
     y: number | any
@@ -26,6 +26,14 @@ interface reponseAttack {
     top: number
     left: number,
     reponse: boolean
+}
+
+interface LeadBoardType {
+    name: string,
+    score: number,
+    id: string,
+    nombreJoueurToucher: number,
+    nombreAttack: number,
 }
 
 const Game = () => {
@@ -45,6 +53,11 @@ const Game = () => {
     const [viewRightIA, setViewRightIA] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [confirm, setConfirm] = useState(false);
+    const [nbAttack, setNbAttack] = useState(0);
+    const [nbAttackIA, setNbAttackIA] = useState(0);
+    const [nbJoueurTrouver, setNbJoueurTrouver] = useState(0);
+    const [nbJoueurTrouverIA, setNbJoueurTrouverIA] = useState(0);
+
 
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
@@ -116,6 +129,7 @@ const Game = () => {
     }
 
     const actack = (event: GestureResponderEvent) => {
+        setNbAttack(nbAttack + 1);
         let p: Position = { x: event.nativeEvent.locationX, y: event.nativeEvent.locationY };
         p = TranslateDimension(p);
         let found = IaList.some(element => element.x === p.x && element.y === p.y);
@@ -125,6 +139,7 @@ const Game = () => {
             let newList = IaList.filter(item => item.x !== p.x || item.y !== p.y);
             setIaList(newList)
             setViewRight(!viewRight)
+            setNbJoueurTrouver(nbJoueurTrouver + 1);
         }
         else {
             setViewCroix(!viewCroix);
@@ -133,7 +148,7 @@ const Game = () => {
         setTurn(!turn);
     }
     const actackIA = () => {
-
+        setNbAttackIA(nbAttackIA + 1);
         let x = a + Math.random() * (a * 5);
         let y = b + Math.random() * (b * 10);
         let p: Position = { x: x, y: y };
@@ -145,6 +160,7 @@ const Game = () => {
             let newList = maList.filter(item => item.x !== p.x || item.y !== p.y);
             setList(newList)
             setViewRightIA(!viewRightIA)
+            setNbJoueurTrouverIA(nbJoueurTrouverIA + 1);
         }
         else {
             setViewCroixIA(!viewCroixIA);
@@ -207,13 +223,17 @@ const Game = () => {
         setTurn(true);
         setIaList([]);
         setList([]);
+        setNbJoueurTrouverIA(0)
+        setNbAttackIA(0)
+        setNbJoueurTrouver(0)
+        setNbAttack(0)
         setText("Placer vos joueur sur le terrain");
     }
 
     const confirmRelancementJeu = () => {
         return (
             <>
-                <MyModal visible={confirm} onClose={() => { setConfirm(!confirm) }} title={"Navale"} message={"Voulez-vous vraiment recommancer le jeu ?"} onPress={() => { relancer_La_Partie() }} info={false} text1={"Oui"} text2={"Non"} />
+                <MyModal visible={confirm} onClose={() => { setConfirm(!confirm) }} title={"Navale"} message={"Voulez-vous vraiment recommancer le jeu ?"} onPress={() => { relancer_La_Partie() }} info={false} text1={"Oui"} text2={"Non"} component={null} />
 
             </>
         )
@@ -221,14 +241,59 @@ const Game = () => {
 
 
     const whichWinner = (element: number, message?: string, title?: string) => {
+
+        const LeadBoard = () => {
+
+            // Exemples de données locales
+            // const leaderboardData = [
+            //     { id: '1', username: 'Alice', playersFound: 5, attemptsMissed: 10, score: 40 },
+            //     { id: '2', username: 'Bob', playersFound: 7, attemptsMissed: 5, score: 60 },
+            //     { id: '3', username: 'Charlie', playersFound: 4, attemptsMissed: 8, score: 32 },
+            //     // Ajoutez d'autres joueurs ici
+            // ];
+            let scoreIA = Math.max(0, nbJoueurTrouverIA * 10 - (nbAttackIA - nbJoueurTrouverIA));
+            let score = Math.max(0, nbJoueurTrouver * 10 - (nbAttack - nbJoueurTrouver));
+            const leaderboardData: LeadBoardType[] = [{ id: "1", name: 'IA', nombreAttack: nbAttackIA, nombreJoueurToucher: nbJoueurTrouverIA, score: scoreIA }
+                , { id: "2", name: 'Vous', nombreAttack: nbAttack, nombreJoueurToucher: nbJoueurTrouver, score: score }
+            ];
+
+            const renderItem = ({ item }: { item: any }) => (
+                <LeaderboardRow
+                    username={item.name}
+                    playersFound={item.nombreJoueurToucher}
+                    attemptsMissed={item.nombreAttack}
+                    score={item.score}
+                />
+            );
+            console.log("Rendering LeadBoard with data:", leaderboardData);
+
+            return (
+                <View style={Lead.container}>
+                    <Text style={Lead.title}>Leaderboard</Text>
+                    <View style={Lead.header}>
+                        <Text style={Lead.headerCell}>Joueur</Text>
+                        <Text style={Lead.headerCell}>Nombre de joueurs trouvés</Text>
+                        <Text style={Lead.headerCell}>Nombre de tentatives ratées</Text>
+                        <Text style={Lead.headerCell}>Score</Text>
+                    </View>
+                    <FlatList
+                        data={leaderboardData}
+                        renderItem={renderItem}
+                        keyExtractor={item => item.id}
+                        style={{ flex: 1 }}
+                    />
+                </View>
+            )
+
+        }
         switch (element) {
             case 1:
                 return (
-                    <MyModal visible={modalVisible} onClose={() => { setModalVisible(!modalVisible) }} title={title ? title : "Navale"} message={message ? message : "Vous avez gagné"} onPress={() => { relancer_La_Partie() }} info={true} text1={"Nouvelle Partie"} text2={""} />
+                    <MyModal visible={modalVisible} onClose={() => { setModalVisible(!modalVisible) }} title={title ? title : "Navale"} message={message ? message : "Vous avez gagné"} onPress={() => { relancer_La_Partie() }} info={true} text1={"Nouvelle Partie"} text2={""} component={LeadBoard()} />
                 )
             case 2:
                 return (
-                    <MyModal visible={modalVisible} onClose={() => { setModalVisible(!modalVisible) }} title={title ? title : "Navale"} message={message ? message : "Vous avez perdu déso voulez relancer la partie"} onPress={() => { relancer_La_Partie() }} info={true} text1={"Nouvelle Partie"} text2={""} />
+                    <MyModal visible={modalVisible} onClose={() => { setModalVisible(!modalVisible) }} title={title ? title : "Navale"} message={message ? message : "Vous avez perdu déso voulez relancer la partie"} onPress={() => { relancer_La_Partie() }} info={true} text1={"Nouvelle Partie"} text2={""} component={LeadBoard()} />
                 )
             default:
                 return null;
@@ -318,6 +383,7 @@ const Game = () => {
             }
 
             {
+
                 whichWinner(winner)
             }
             {
@@ -377,6 +443,37 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         flex: 1
     }
+});
+
+
+const Lead = StyleSheet.create({
+    container: {
+        padding: 15,
+        backgroundColor: 'white',
+        flex: 1,
+        width: 400
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    header: {
+        flexDirection: 'row',
+        backgroundColor: '#f7f7f7',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        textAlign: "center",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    headerCell: {
+        flex: 1,
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
 });
 
 export default Game;
