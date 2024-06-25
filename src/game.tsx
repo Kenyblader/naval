@@ -4,7 +4,7 @@ import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
 import { useRoute } from "@react-navigation/native";
 import { colorTitle } from "./login";
-import { getAdverseConstaintScreen, initAUser, lancerAttaque, lancerPartie, subscribeToFirestoreUpdates, subscribeToPositions } from "../database";
+import { getAdverseConstaintScreen, initAUser, lancerAttaque, lancerPartie, setScrore, subscribeToFirestoreUpdates, subscribeToPositions } from "../database";
 import { transformer } from "../metro.config";
 
 
@@ -24,37 +24,55 @@ const Game=({navigation}:any)=>{
     const root=useRoute()
     const{isHote,receiver,idPartie}:any=root.params;
     const [isBegining,setBegining]=useState(false)
-
+    const [isMyTurn,setMyTurn]=useState(false)
+    const [userScore,setUserScore]=useState(5)
+    const [otherScore,setOtherScore]=useState(0)
+    const [positionReceive,setPositionReceiver]=useState<Position>({x:-1,y:-1})
+    
 
     useEffect(()=>{
-        
-  /*  if(!isHote){
-       const val=subscribeToFirestoreUpdates((data)=>{
+        const val=subscribeToFirestoreUpdates((data)=>{
+
+           if(!isHote){ 
             if(data.statut)
-                hangleFunction()
-        })
-    }*/
-        const val=subscribeToPositions((data)=>{
-           if(data)
-           { 
-          
-                setFirstTime(true)
-                reciveAttaque(data.position).then(()=>{
-
-                })
-                .catch((e)=>{
-                
-                    console.log('erreur dereception d attaque'+e)
-                    setFirstTime(false)
-                })
-            setFirstTime(false)
-           
-           }
-
+                hangleFunction()}
         })
     },[])
 
-   
+
+
+    useEffect(()=>{
+        const val=subscribeToPositions((data)=>{
+            if(data){
+                if(isBegining){
+                    console.log('vous avez ete attaquer'+data.position.x+" "+data.position.y)
+                    if(!(positionReceive.x==data.position.x && positionReceive.y==data.position.y))
+                    {setPositionReceiver(data.position)
+                    console.log(positionReceive)}
+                    if(data.score!=otherScore)
+                    {
+                        setOtherScore(data.score)
+                    }
+                }
+            }
+        })
+    
+    },[])
+
+    useEffect(()=>{
+        if(isBegining){
+            setScrore(userScore)
+        }
+    },[maList])
+    
+ useEffect(()=>{
+    setFirstTime(true)
+    console.log('debutReception'+maList.length)
+    let p=positionReceive
+    reciveAttaque(p).then(()=>{ console.log('ok')}).catch((e)=>{console.log('erreur receier'+e)})
+    console.log('finReception'+maList.length)
+    setFirstTime(false)
+},[positionReceive])
 
     let a:number=(Dimensions.get('window').width)/5;
     let b:number=(Dimensions.get('window').height)/10;
@@ -77,11 +95,8 @@ const Game=({navigation}:any)=>{
              if(val>x2){
                  x2=i-1;
                  break;
-             }
-            
-           
+             } 
          }
-         
          for(let i=1;i<=10;i++){
              let val=i*b;
              if(y2<val){
@@ -122,11 +137,28 @@ const Game=({navigation}:any)=>{
                  break
              }
              pre=val;
-         }
-        
-         
+         } 
         return {x:(x2),y:(y2)};
      }
+     const reciveAttaque=async (p:Position)=>{
+        p= correctDimention(p);
+        console.log('positions '+p.x+' '+p.y)
+        let newList:Position[]=[]
+        console.log(maList.length)
+        maList.forEach(element=>{
+            if((element.x==p.x && element.y==p.y)){
+               console.log('attaqué')
+            }
+            else{
+                newList.push(element)
+                console.log('x:'+element.x+" y:"+element.y)  
+            }
+        })
+        setList(newList)
+        console.log('attaque px:'+p.x+ 'py:'+p.y)
+          
+     }
+
 
       function correctDimention(p:Position):Position{
       
@@ -134,23 +166,7 @@ const Game=({navigation}:any)=>{
         return{x:p.x*a,y:p.y*b}
      }
 
-    const reciveAttaque=async (p:Position)=>{
-        p= correctDimention(p);
-        console.log('positions '+p.x+' '+p.y)
-        let newList:Position[]=[]
-        console.log(maList.length)
-        maList.forEach(element=>{
-            if(!(element.x==p.x && element.y==p.y)){
-                newList.push(element)
-                console.log('x:'+element.x+" y:"+element.y)
-            }
-            else{
-                console.log('attaqué')
-            }
-        })
-        console.log('attaque px:'+p.x+ 'py:'+p.y)
-          
-     }
+    
 
      function setAttack(p:Position){
         console.error("l'attaque v'as se lancer"+p)
@@ -161,10 +177,12 @@ const Game=({navigation}:any)=>{
     const hangleFunction=()=>{
         //setHeightScreen('100%');
         setBegining(true)
-        console.log(maList)
         if(isHote){
              lancerPartie(idPartie)
-        }   
+             console.error('lapartie a ete lance')
+        } 
+        setText('la Partie est lancee')  
+        console.log(maList)
      }
 
   
@@ -215,7 +233,7 @@ const Game=({navigation}:any)=>{
         </View>
         <View style={styles.bottomBar}>
             <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={hangleFunction}>
-                <Text style={{fontSize:20,fontWeight:'bold'}}>{maList.length}</Text>
+                <Text style={{fontSize:20,fontWeight:'bold'}}>{text}</Text>
             </Pressable>
         </View>
         </View>
@@ -288,5 +306,6 @@ const styles=StyleSheet.create({
         zIndex:5
       }
 })
+
 export default Game;
 export type {Position};
