@@ -120,7 +120,7 @@ export const subscribeToPositions=(onUpdate: (data: any) => void)=>{
       if (documentSnapshot.exists) {
         const data = documentSnapshot.data();
         onUpdate(data || null);
-        console.log(data)
+        console.log(data?.position)
       } else {
         console.error('Document does not exist'+docId);
         onUpdate(null);
@@ -179,9 +179,16 @@ export const setScrore=(n:number)=>{
   firestore().collection(collectionPosition).doc(nameUser).update({score:n})
 }
 
-export const getAdverseConstaintScreen=(receiver:string)=>{
-  firestore().collection(collectionPosition).doc(receiver).get().then((data)=>{ return data.data()?.constainScreen})
-  return {};
+export const getAdverseConstaintScreen=async(receiver:string)=>{
+  return new Promise((resolve,reject)=>{
+    firestore().collection(collectionPosition).doc(receiver).onSnapshot((data)=>{ 
+      if(data.exists)
+       resolve( data.data());
+      else
+        reject ()}
+  ,
+    (error)=>{console.error('screenError:'+error); reject()})
+  })
 }
 
 

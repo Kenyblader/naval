@@ -36,7 +36,7 @@ export const userSalon=({navigation})=>{
        
     </View>
     <View style={{ width:'100%', flexDirection:'row',  alignItems:'center',paddingHorizontal:'45%'}}>
-            <Pressable onPress={()=>{navigation.navigate('Partie',{isHote:true,receiver:player[0].name,idPartie:id})}}>
+            <Pressable onPress={()=>{navigation.navigate('Partie',{isHote:true,receiver:player[1].name,idPartie:id})}}>
                 <Image source={ready}  style={styles.image}></Image>
             </Pressable>
         </View>
@@ -62,7 +62,7 @@ export const otherSalon= ({navigation})=>{
     function  connecter(id:string){
         console.log("ok")
         rejoindrePartie(id)
-        .then(()=>{navigation.navigate('Partie',{isHote:false,receiver:id,idPartie})})
+        .then(()=>{navigation.navigate('Partie',{isHote:false,receiver:id,idPartie:id})})
         .catch((error)=>{console.log(error)})
     }
 

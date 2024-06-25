@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Dimensions, GestureResponderEvent, Image, ImageBackground, NativeEventEmitter, Pressable, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Button, Dimensions, GestureResponderEvent, Image, ImageBackground, NativeEventEmitter, Pressable, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import ImageList from './imageList';
 import gameBackground from './images/beautiful-medieval-fantasy-landscape.jpg'
 import { useRoute } from "@react-navigation/native";
@@ -20,30 +20,78 @@ const Game=({navigation}:any)=>{
     const [maList,setList]=useState<Position[]>([]);
     const [text,setText]=useState('En Attente ...');
     const [heightSreen,setHeightScreen]= useState('95%')
-    const [isFirstTime,setFirstTime]=useState(true)
+    const [isFirstTime,setFirstTime]=useState(false)
     const root=useRoute()
     const{isHote,receiver,idPartie}:any=root.params;
     const [isBegining,setBegining]=useState(false)
-    const [adverseConstaintScreen,setAdverseConstainScreen]=useState<Position>()
+
 
     useEffect(()=>{
         
-    if(!isHote){
+  /*  if(!isHote){
        const val=subscribeToFirestoreUpdates((data)=>{
             if(data.statut)
                 hangleFunction()
         })
-    }
+    }*/
         const val=subscribeToPositions((data)=>{
            if(data)
-            reciveAttaque(data.position)
+           { 
+          
+                setFirstTime(true)
+                reciveAttaque(data.position).then(()=>{
+
+                })
+                .catch((e)=>{
+                
+                    console.log('erreur dereception d attaque'+e)
+                    setFirstTime(false)
+                })
+            setFirstTime(false)
+           
+           }
+
         })
     },[])
+
    
 
     let a:number=(Dimensions.get('window').width)/5;
     let b:number=(Dimensions.get('window').height)/10;
     const maxPlayer=10;
+    function giveNumber(p:Position):Position{
+        let x2=p.x;
+        let y2=p.y;
+        
+        
+         x2=(x2<0)?0:x2;
+         x2=(x2>5*a)?4*a:x2;
+ 
+         y2=(y2<0)?0:y2;
+         y2=(y2>10*b)?9*b:y2;
+        
+        
+         
+         for(let i=1;i<=5;i++){
+             let val=a*i;
+             if(val>x2){
+                 x2=i-1;
+                 break;
+             }
+            
+           
+         }
+         
+         for(let i=1;i<=10;i++){
+             let val=i*b;
+             if(y2<val){
+                 y2=i-1
+                 break
+             }
+             
+         }
+         return{x:x2,y:y2}
+    }
     function TranslateDimension(p:Position):Position{
         let x2=p.x;
         let y2=p.y;
@@ -80,61 +128,58 @@ const Game=({navigation}:any)=>{
         return {x:(x2),y:(y2)};
      }
 
-     function correctDimention(p:Position){
-        let x=p.x;
-        let y=p.y;
-        x=x*a/adverseConstaintScreen?.x;
-        y=y*b/adverseConstaintScreen?.y;
-
+      function correctDimention(p:Position):Position{
+      
+        console.log(' transformationPosition'+p.x+' '+p.y)
+        return{x:p.x*a,y:p.y*b}
      }
 
-     function reciveAttaque(p:Position){
-        let p2=TranslateDimension(p)
-        p=TranslateDimension(p);
-        let i=maList.length;
-        let found:boolean=false;
-        maList.forEach(element => {
-            if(element.x==p.x && element.y==p.y){
-                found=true;
+    const reciveAttaque=async (p:Position)=>{
+        p= correctDimention(p);
+        console.log('positions '+p.x+' '+p.y)
+        let newList:Position[]=[]
+        console.log(maList.length)
+        maList.forEach(element=>{
+            if(!(element.x==p.x && element.y==p.y)){
+                newList.push(element)
+                console.log('x:'+element.x+" y:"+element.y)
             }
-        });
-        if(found)
-            {
-                let newList=maList.filter(item=>(item.x!==p.x || item.y!==p.y));
-                setList(newList);
-                i--;
+            else{
+                console.log('attaqué')
             }
+        })
+        console.log('attaque px:'+p.x+ 'py:'+p.y)
+          
      }
 
      function setAttack(p:Position){
+        console.error("l'attaque v'as se lancer"+p)
         lancerAttaque(p,receiver)
      }
 
 
-     function hangleFunction(){
-        setHeightScreen('100%');
+    const hangleFunction=()=>{
+        //setHeightScreen('100%');
         setBegining(true)
-        initAUser(a,b)
+        console.log(maList)
         if(isHote){
              lancerPartie(idPartie)
         }   
      }
 
   
-    function  onTouch(even:GestureResponderEvent){
+    const  onTouch=(even:GestureResponderEvent)=>{
+        if(isFirstTime)
+            return;
             
         let i=maList.length;
         let p:Position={x:even.nativeEvent.locationX,y:even.nativeEvent.locationY};
-        p=TranslateDimension(p);
         if(isBegining){
-            if(isFirstTime)
-            {
-                    setAdverseConstainScreen(getAdverseConstaintScreen(receiver))
-                    setFirstTime(false)
-            }
-            setAttack(p)
+
+            setAttack(giveNumber(p))
             return;
         }else{
+        p=TranslateDimension(p);
         let found:boolean=false;
         maList.forEach(element => {
             if(element.x==p.x && element.y==p.y){
@@ -144,6 +189,7 @@ const Game=({navigation}:any)=>{
         
         if(!found && maList.length<maxPlayer){
            setList([...maList,p])
+           console.log(p)
            i++;
         }
         else if(found)
@@ -165,10 +211,11 @@ const Game=({navigation}:any)=>{
         <ImageBackground source={gameBackground} style={styles.background}>
             {ImageList(maList)}
         </ImageBackground>
+        {isFirstTime && <ActivityIndicator size='large' color={colorTitle}></ActivityIndicator>}
         </View>
         <View style={styles.bottomBar}>
             <Pressable style={{backgroundColor:'#63b0da',height:'100%',alignItems:'center'}} onPress={hangleFunction}>
-                <Text style={{fontSize:20,fontWeight:'bold'}}>{text}</Text>
+                <Text style={{fontSize:20,fontWeight:'bold'}}>{maList.length}</Text>
             </Pressable>
         </View>
         </View>
@@ -231,6 +278,14 @@ const styles=StyleSheet.create({
         height:'100%',
         backgroundColor:'red',
         flex:1
+      }
+,
+      activitieIndicator:{
+        position:'absolute',
+        top:'40%',
+        left:'40%',
+        width:'20%',
+        zIndex:5
       }
 })
 export default Game;
