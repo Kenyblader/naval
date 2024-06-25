@@ -233,7 +233,7 @@ const Game = () => {
     const confirmRelancementJeu = () => {
         return (
             <>
-                <MyModal visible={confirm} onClose={() => { setConfirm(!confirm) }} title={"Navale"} message={"Voulez-vous vraiment recommancer le jeu ?"} onPress={() => { relancer_La_Partie() }} info={false} text1={"Oui"} text2={"Non"} component={null} />
+                <MyModal visible={confirm} onClose={() => { setConfirm(!confirm) }} title={"Navale"} message={"Voulez-vous vraiment recommancer le jeu ?"} onPress={() => { relancer_La_Partie(); setConfirm(!confirm)}} info={false} text1={"Oui"} text2={"Non"} component={null} />
 
             </>
         )
@@ -300,6 +300,7 @@ const Game = () => {
         }
 
     }
+
     useEffect(() => {
         if (IaList.length === 0 && statusJeu === 2) {
             setWinner(1);
@@ -357,7 +358,7 @@ const Game = () => {
                         <AnimateElement isVisible={viewCroixIA} onDisappear={setViewCroixIA} image={Croix} responsePosition={responsePositionIA} indice={null} />
                         <AnimateElement isVisible={viewRightIA} onDisappear={setViewRightIA} image={right} responsePosition={responsePositionIA} indice={1} />
                         <View style={styles.bottomBar}>
-                            <Button title="Recommencer" color='black' onPress={() => { setConfirm(!confirm) }} />
+                            <Button title="Recommencer" color='black' onPress={() => { setConfirm(!confirm); }} />
                             <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", backgroundColor: "rgb(49, 236, 74)", padding: 20 }}>
                                 <Text style={{ color: "white" }}>
                                     {text1}

@@ -31,7 +31,6 @@ function Login({ navigation }) {
                 setError('');
                 setPass('');
                 setLoading(false);
-                navigation.navigate('Partie');
             })
             .catch(() => {
                 setLoading(false);
