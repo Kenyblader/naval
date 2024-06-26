@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { createPartie } from "../database"
+import { colorTitle } from "./login"
 
 const ChoiceScreen=({navigation}:any)=>{
 
@@ -21,7 +22,7 @@ const ChoiceScreen=({navigation}:any)=>{
 
             </TouchableOpacity>
                
-            <TouchableOpacity onPress={()=>{navigation.navigate('Menu',{part:true})}}>
+            <TouchableOpacity style={styles.container} onPress={()=>{navigation.navigate('Menu',{part:true})}}>
                 <Text style={styles.text}>se connecter</Text>
             </TouchableOpacity>
         </View>
@@ -32,11 +33,11 @@ const ChoiceScreen=({navigation}:any)=>{
 const styles=StyleSheet.create({
     container:{
         borderWidth:1,
-        backgroundColor:'rgb(231, 232, 238)',
+        backgroundColor:colorTitle,
         alignItems:'center',
         borderRadius:20,
         padding:10,
-        marginVertical:'50%'
+        marginVertical:'50%',
     },
     text:{
         fontSize:18,
