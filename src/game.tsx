@@ -28,41 +28,33 @@ const Game=({navigation}:any)=>{
     const [userScore,setUserScore]=useState(5)
     const [otherScore,setOtherScore]=useState(0)
     const [positionReceive,setPositionReceiver]=useState<Position>({x:-1,y:-1})
-    
 
-    useEffect(()=>{
-        const val=subscribeToFirestoreUpdates((data)=>{
 
-           if(!isHote){ 
-            if(data.statut)
-                hangleFunction()}
-        })
-    },[])
-
+   
 
 
     useEffect(()=>{
+        initAUser(a,b)
         const val=subscribeToPositions((data)=>{
+            console.log('je recois l attaque'+isBegining)
             if(data){
-                if(isBegining){
+               
                     console.log('vous avez ete attaquer'+data.position.x+" "+data.position.y)
-                    if(!(positionReceive.x==data.position.x && positionReceive.y==data.position.y))
-                    {setPositionReceiver(data.position)
-                    console.log(positionReceive)}
-                    if(data.score!=otherScore)
-                    {
-                        setOtherScore(data.score)
+                    setPositionReceiver(data.position)
+                    setOtherScore(data.score)
+                    if(data.score==0 && data.positions.length>=2){
+                        setHeightScreen('2%')
                     }
-                }
+                
+            }else{
+                console.log('data est null')
             }
         })
     
     },[])
 
     useEffect(()=>{
-        if(isBegining){
             setScrore(userScore)
-        }
     },[maList])
     
  useEffect(()=>{
@@ -76,7 +68,7 @@ const Game=({navigation}:any)=>{
 
     let a:number=(Dimensions.get('window').width)/5;
     let b:number=(Dimensions.get('window').height)/10;
-    const maxPlayer=10;
+    const maxPlayer=8;
     function giveNumber(p:Position):Position{
         let x2=p.x;
         let y2=p.y;
@@ -174,15 +166,14 @@ const Game=({navigation}:any)=>{
      }
 
 
-    const hangleFunction=()=>{
-        //setHeightScreen('100%');
+    function hangleFunction(){
         setBegining(true)
+        console.log('idPartie:'+idPartie)
         if(isHote){
-             lancerPartie(idPartie)
-             console.error('lapartie a ete lance')
+            let ok=  lancerPartie(receiver);
+             console.error('lapartie a ete lance'+ok)
         } 
         setText('la Partie est lancee')  
-        console.log(maList)
      }
 
   
@@ -218,6 +209,14 @@ const Game=({navigation}:any)=>{
         }
     }
        
+    }
+
+    const bottomText=():string=>{
+        if(isBegining)
+            return text;
+        else
+            return 'Votre Scores:( '+maList.length+'/'+maxPlayer+' )'+'Score Adverse( '+otherScore+'/'+maxPlayer+' )'
+
     }
 
     return(<View style={{height:heightSreen}}>

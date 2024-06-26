@@ -151,7 +151,7 @@ export const ecouteEventPartie=async():Promise<any>=>{
 }
 
 export const lancerPartie =(id:string)=>{
-  firestore().collection(collectionPosition).doc(id).update({ statut:true })
+  firestore().collection(collectionPartie).doc(id).update({ statut:true })
   .then(()=>{
     return true;
   })
