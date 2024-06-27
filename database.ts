@@ -152,15 +152,15 @@ export const ecouteEventPartie = async (): Promise<any> => {
   })
 }
 
-export const lancerPartie = (id: string) => {
-  firestore().collection(collectionPosition).doc(id).update({ statut: true })
-    .then(() => {
-      return true;
-    })
-    .catch((error) => {
-      console.log('erreur' + error)
-      return false;
-    })
+export const lancerPartie =(id:string)=>{
+  firestore().collection(collectionPartie).doc(id).update({ statut:true })
+  .then(()=>{
+    return true;
+  })
+  .catch((error)=>{
+    console.log('erreur' +error)
+    return false;
+  })
 }
 
 export const initAUser = (k: number, y: number) => {
