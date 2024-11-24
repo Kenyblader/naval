@@ -1,11 +1,8 @@
 import { FlatList, Image, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native"
-import jeux from './images/jeux.png'
 import avatar from './images/avatar.png'
-import React, { useState } from "react"
 import { colorTitle } from "./login"
-import auth from "@react-native-firebase/auth"
 import { userSalon,otherSalon } from "./menuContain"
-import { NavigationProp, ParamListBase, useRoute } from "@react-navigation/native"
+import {  useRoute } from "@react-navigation/native"
 
 
 const Menu=(navigation)=>{
